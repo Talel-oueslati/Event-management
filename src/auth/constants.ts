@@ -1,0 +1,3 @@
+export const jwtConstants = {
+    secret: 'NE PAS UTILISER CETTE VALEUR. À LA PLACE, CRÉEZ UNE CLÉ COMPLÈXE ET GARDEZ-LA EN SÉCURITÉ EN DEHORS DU CODE SOURCE.',
+  };
