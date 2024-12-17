@@ -10,6 +10,9 @@ export class Event {
   name: string;
 
   @Column()
+  categorie: string;
+
+  @Column()
   date: Date;
 
   @ManyToMany(() => User, (user) => user.events)

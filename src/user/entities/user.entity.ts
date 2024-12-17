@@ -17,7 +17,7 @@ id: number;
    username:string;    
 
    @ManyToMany(() => Event, (event) => event.users)
-   events: Event[]; // Make sure this is defined for the inverse side of the relationship
+   events: Event[]; 
  
 @Column({
     type: 'enum',

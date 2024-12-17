@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity'; // Make sure the path is correct
 import { Event } from './entities/event.entity';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class EventService {
@@ -13,13 +14,20 @@ export class EventService {
     private eventRepository: Repository<Event>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly notificationService: NotificationService
   ) {}
 
   async create(createEventDto: CreateEventDto): Promise<Event> {
 
     const event = this.eventRepository.create(createEventDto);
 
-    return await this.eventRepository.save(event);
+     await this.eventRepository.save(event);
+     await this.notificationService.createNotification(
+      'added',
+      `New event "${event.name}" added.`,
+    );
+
+    return event;
   }
 
 
@@ -39,13 +47,48 @@ export class EventService {
     event.name = updateEventDto.name;
     event.date = updateEventDto.date;
       
-    return  this.eventRepository.save(event);
+    await  this.eventRepository.save(event);
+    await this.notificationService.createNotification(
+      'updated',
+      `Event "${event.name}"  updated.`,
+    );
+
+    return event;
+  
   }
 
  remove(id: number) {
-     this.eventRepository.delete(id);
+  const event = this.eventRepository.findOne({ where: { id } });
+  this.notificationService.createNotification(
+    'deleted',
+    `Event "${event}"  deleted.`,
+  );
+    this.eventRepository.delete(id);
+
+
+  }
+  async findAllByName(name: string): Promise<Event[]> {
+    const events = await this.eventRepository.find({ where: { name } });
+    if (events.length === 0) {
+      throw new NotFoundException(`No events found with name "${name}"`);
+    }
+    return events;
+  }
+  async findByDate(date: Date): Promise<Event[]> {
+    const events = await this.eventRepository.find({ where: { date } });
+    if (events.length === 0) {
+      throw new NotFoundException(`Event with name "${date}" not found`);
+    }
+    return events;
   }
 
+  async findByCategorie(categorie: string): Promise<Event[]> {
+    const events = await this.eventRepository.find({ where: { categorie } });
+    if (events.length === 0) {
+      throw new NotFoundException(`Event with name "${categorie}" not found`);
+    }
+    return events;
+  }
   async addUserToEvent(eventId: number, userId: number): Promise<Event> {
 
     const event = await this.eventRepository.findOne({

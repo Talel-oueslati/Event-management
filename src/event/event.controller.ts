@@ -6,12 +6,14 @@ import { Event } from './entities/event.entity';
 import { RolesGuard } from 'src/roles.guard';
 import { Roles } from 'src/roles.decorator';
 import { Role } from 'src/role.enum';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('event')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post('addevent')
+  //@Roles(Role.Admin) 
   async create(@Body() createEventDto: CreateEventDto): Promise<Event> {
     return this.eventService.create(createEventDto);
   }
@@ -41,11 +43,26 @@ export class EventController {
   ): Promise<Event> {
       return this.eventService.addUserToEvent(eventId, userId);
   }
+  
  
 
 
   @Get(':eventId/participants')
+
   async getParticipants(@Param('eventId') eventId: number): Promise<{ eventId: number; participants: { userId: number; username: string }[] }> {
     return this.eventService.getEventParticipants(eventId);
+  }
+
+  @Get('name/:name')
+  async getEventsByName(@Param('name') name: string): Promise<Event[]> {
+    return this.eventService.findAllByName(name);
+  }
+  @Get('date/:date')
+  async getEventByDate(@Param('date') date: Date): Promise<Event[]> {
+    return this.eventService.findByDate(date);
+  }
+  @Get('categorie/:categorie')
+  async getEventByCategorie(@Param('categorie') categorie: string): Promise<Event[]> {
+    return this.eventService.findByCategorie(categorie);
   }
 }
